@@ -2,8 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
-  "schedule": ["after 2am on Sunday", "before 3am on Sunday"],
-  "timezone": "Europe/Berlin",
   "customManagers": [
     {
       "customType": "regex",
