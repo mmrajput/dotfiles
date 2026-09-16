@@ -136,7 +136,7 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     diagrams==${DIAGRAMS_VERSION}
 
 # Install Neovim (latest stable)
-ARG NEOVIM_VERSION=0.12.1
+ARG NEOVIM_VERSION=0.12.5
 RUN curl -fL "https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
     -o nvim-linux-x86_64.tar.gz \
     && tar -xzf nvim-linux-x86_64.tar.gz \
