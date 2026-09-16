@@ -127,7 +127,7 @@ RUN curl -LO "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/y
 # Install Ansible via pip (latest 2.x stable)
 RUN pip3 install --no-cache-dir --break-system-packages \
     ansible==10.7.0 \
-    ansible-core==2.17.7 \
+    ansible-core==2.21.4 \
     kubernetes \
     jmespath
 
