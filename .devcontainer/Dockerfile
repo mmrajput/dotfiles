@@ -13,7 +13,7 @@ ARG USER_GID=1000
 # Tool versions - Pinned for reproducibility
 # CKA exam targets Kubernetes 1.31, kubectl must match
 ARG KUBECTL_VERSION=1.31.4
-ARG K9S_VERSION=0.32.7
+ARG K9S_VERSION=0.51.0
 ARG HELM_VERSION=3.16.3
 ARG ARGOCD_VERSION=2.13.2
 ARG ETCD_VERSION=3.5.17
