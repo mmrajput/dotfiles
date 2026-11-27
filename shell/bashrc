@@ -1,5 +1,5 @@
 # =============================================================================
-# Homelab DevContainer Shell Configuration
+# DevContainer Shell Configuration
 # Managed in: github.com/mmrajput/dotfiles
 # =============================================================================
 
@@ -8,17 +8,29 @@ source <(kubectl completion bash)
 alias k=kubectl
 complete -o default -F __start_kubectl k
 
+# Terraform tab completion
+complete -C /usr/local/bin/terraform terraform
+
 # Editor
-export EDITOR=vim
+export EDITOR=nvim
+alias vi='nvim'
+alias vim='nvim'
+
+# Terraform / Terragrunt aliases
+alias tf=terraform
+alias tg=terragrunt
+alias tgp='terragrunt plan'
+alias tga='terragrunt apply'
+alias tgr='terragrunt run-all'
+
+# Terraform provider cache — shared across all stacks, avoids re-downloading on each init
+export TF_PLUGIN_CACHE_DIR="$HOME/.config/terraform/plugin-cache"
 
 # Useful aliases
 alias ll='ls -alF'
 alias la='ls -A'
 alias ..='cd ..'
 alias ...='cd ../..'
-alias vi='nvim'
-alias vim='nvim'
-export EDITOR=nvim
 
 # =============================================================================
 # Prompt helpers
@@ -32,6 +44,15 @@ parse_k8s_context() {
     if [ -f ~/.kube/config ]; then
         ctx=$(kubectl config current-context 2>/dev/null)
         echo "⎈ ${ctx##*@}"
+    fi
+}
+
+parse_az_account() {
+    local profile="$HOME/.azure/azureProfile.json"
+    if [ -f "$profile" ]; then
+        local name
+        name=$(jq -r '.subscriptions[] | select(.isDefault==true) | .name' "$profile" 2>/dev/null)
+        [ -n "$name" ] && echo " ☁ ${name}"
     fi
 }
 
@@ -55,7 +76,7 @@ RESET='\[\033[0m\]'
 # =============================================================================
 
 PS1="${PURPLE}┌─[${CYAN}\u${WHITE}@${CYAN}\h${PURPLE}]─[${YELLOW}\w${PURPLE}]"
-PS1="${PS1}${BLUE}\$(parse_k8s_context)${PURPLE}\$(parse_git_branch)${RESET}\n"
+PS1="${PS1}${BLUE}\$(parse_k8s_context)${CYAN}\$(parse_az_account)${PURPLE}\$(parse_git_branch)${RESET}\n"
 PS1="${PS1}${PURPLE}└─"
 if [ $? -eq 0 ]; then
     PS1="${PS1}${GREEN}\$${RESET} "

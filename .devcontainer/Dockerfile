@@ -1,6 +1,6 @@
-# Homelab Infrastructure DevContainer
-# Base: Ubuntu 24.04 LTS (matching cluster VMs)
-# Purpose: Isolated CLI environment for Kubernetes cluster management
+# Infrastructure DevContainer
+# Base: Ubuntu 24.04 LTS
+# Purpose: Isolated CLI environment for Azure and Kubernetes infrastructure
 # User: rajput (UID 1000)
 
 FROM ubuntu:24.04
@@ -20,6 +20,13 @@ ARG ETCD_VERSION=3.5.17
 ARG CRICTL_VERSION=1.31.1
 ARG YQ_VERSION=4.44.6
 ARG DIAGRAMS_VERSION=0.24.4
+
+# Azure / IaC tool versions
+ARG TERRAFORM_VERSION=1.9.5
+ARG TERRAGRUNT_VERSION=0.67.6
+ARG TFLINT_VERSION=0.51.1
+ARG TRIVY_VERSION=0.52.0
+ARG GH_VERSION=2.50.0
 
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -62,6 +69,22 @@ RUN apt-get update && apt-get install -y \
     bash-completion \
     sudo \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Azure CLI via Microsoft apt repo
+RUN curl -sLS https://packages.microsoft.com/keys/microsoft.asc \
+        | gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg \
+    && chmod go+r /etc/apt/keyrings/microsoft.gpg \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" \
+        > /etc/apt/sources.list.d/azure-cli.list \
+    && apt-get update \
+    && apt-get install -y azure-cli \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install GitHub CLI
+RUN curl -LO "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+    && tar -xzf gh_${GH_VERSION}_linux_amd64.tar.gz \
+    && install -o root -g root -m 0755 gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin/gh \
+    && rm -rf gh_${GH_VERSION}_linux_amd64.tar.gz gh_${GH_VERSION}_linux_amd64
 
 # Create user with sudo privileges
 # Ubuntu 24.04 pre-creates ubuntu:ubuntu (1000:1000), so we handle conflicts
@@ -124,12 +147,36 @@ RUN curl -LO "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/y
     && install -o root -g root -m 0755 yq_linux_amd64 /usr/local/bin/yq \
     && rm yq_linux_amd64
 
+# Install Terraform
+RUN curl -LO "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
+    && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
+    && install -o root -g root -m 0755 terraform /usr/local/bin/terraform \
+    && rm terraform terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+
+# Install Terragrunt
+RUN curl -LO "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64" \
+    && install -o root -g root -m 0755 terragrunt_linux_amd64 /usr/local/bin/terragrunt \
+    && rm terragrunt_linux_amd64
+
+# Install tflint
+RUN curl -LO "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip" \
+    && unzip tflint_linux_amd64.zip \
+    && install -o root -g root -m 0755 tflint /usr/local/bin/tflint \
+    && rm tflint tflint_linux_amd64.zip
+
+# Install Trivy (IaC + container security scanner)
+RUN curl -LO "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
+    && tar -xzf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz \
+    && install -o root -g root -m 0755 trivy /usr/local/bin/trivy \
+    && rm -rf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz contrib LICENSE README.md
+
 # Install Ansible via pip (latest 2.x stable)
 RUN pip3 install --no-cache-dir --break-system-packages \
     ansible==10.7.0 \
     ansible-core==2.17.7 \
     kubernetes \
-    jmespath
+    jmespath \
+    checkov==3.2.0
 
 # Install Diagrams (architecture-as-code for portfolio diagrams)
 RUN pip3 install --no-cache-dir --break-system-packages \
@@ -143,8 +190,9 @@ RUN curl -fL "https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSI
     && install -o root -g root -m 0755 nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim \
     && rm -rf nvim-linux-x86_64.tar.gz nvim-linux-x86_64
 
-# Enable bash completion for kubectl
-RUN kubectl completion bash > /etc/bash_completion.d/kubectl
+# Enable bash completions
+RUN kubectl completion bash > /etc/bash_completion.d/kubectl \
+    && gh completion -s bash > /etc/bash_completion.d/gh
 
 # Switch to user
 USER ${USERNAME}

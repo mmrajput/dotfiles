@@ -87,6 +87,53 @@
       "matchStrings": ["ansible-core==(?<currentValue>[\\d.]+)"],
       "depNameTemplate": "ansible-core",
       "datasourceTemplate": "pypi"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.devcontainer/Dockerfile$"],
+      "matchStrings": ["checkov==(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "checkov",
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.devcontainer/Dockerfile$"],
+      "matchStrings": ["ARG TERRAFORM_VERSION=(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "hashicorp/terraform",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.devcontainer/Dockerfile$"],
+      "matchStrings": ["ARG TERRAGRUNT_VERSION=(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "gruntwork-io/terragrunt",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.devcontainer/Dockerfile$"],
+      "matchStrings": ["ARG TFLINT_VERSION=(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "terraform-linters/tflint",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.devcontainer/Dockerfile$"],
+      "matchStrings": ["ARG TRIVY_VERSION=(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "aquasecurity/trivy",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.devcontainer/Dockerfile$"],
+      "matchStrings": ["ARG GH_VERSION=(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "cli/cli",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ],
   "packageRules": [
@@ -101,6 +148,12 @@
       "matchPackageNames": ["ansible", "ansible-core"],
       "groupName": "ansible",
       "groupSlug": "ansible"
+    },
+    {
+      "description": "IaC scanners — update together so CI and local are always in sync",
+      "matchPackageNames": ["checkov", "aquasecurity/trivy"],
+      "groupName": "iac-scanners",
+      "groupSlug": "iac-scanners"
     }
   ]
 }

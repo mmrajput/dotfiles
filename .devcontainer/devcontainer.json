@@ -12,7 +12,10 @@
 
   "customizations": {
     "vscode": {
-      "extensions": [],
+      "extensions": [
+        "hashicorp.terraform",
+        "github.vscode-github-actions"
+      ],
       "settings": {}
     }
   },
@@ -27,6 +30,9 @@
     // SSH keys - read-only for security
     "source=${localEnv:HOME}/.ssh,target=/home/${localEnv:CONTAINER_USERNAME:rajput}/.ssh,readonly,type=bind",
 
+    // Azure CLI credentials — populated by az login on the host; never stored in the repo
+    "source=${localEnv:HOME}/.azure,target=/home/${localEnv:CONTAINER_USERNAME:rajput}/.azure,type=bind",
+
     // Git configuration
     "source=${localEnv:HOME}/.gitconfig,target=/home/${localEnv:CONTAINER_USERNAME:rajput}/.gitconfig,readonly,type=bind",
 
@@ -34,15 +40,14 @@
     "source=${localEnv:HOME}/.config,target=/home/${localEnv:CONTAINER_USERNAME:rajput}/.config,type=bind"
   ],
 
-  // Use host network to access Kubernetes cluster on local network
   "runArgs": [
-    "--network=host",
     "--hostname=${localEnv:CONTAINER_HOSTNAME:homelab-devcontainer}"
   ],
 
   "containerEnv": {
     "KUBECONFIG": "/home/${localEnv:CONTAINER_USERNAME:rajput}/.kube/config",
-    "EDITOR": "vim"
+    "AZURE_CONFIG_DIR": "/home/${localEnv:CONTAINER_USERNAME:rajput}/.azure",
+    "EDITOR": "nvim"
   },
 
   "postCreateCommand": "bash /home/${localEnv:CONTAINER_USERNAME:rajput}/.devcontainer/post-create.sh",
